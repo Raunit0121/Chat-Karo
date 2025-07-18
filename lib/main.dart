@@ -29,7 +29,16 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const SplashScreen(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const SplashScreen(),
+        '/onboarding': (context) => const OnboardingScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/signup': (context) => const SignupScreen(),
+        '/users': (context) =>  UserListScreen(),
+        '/chat': (context) => const ChatScreen(),
+
+      },
     );
   }
 }
