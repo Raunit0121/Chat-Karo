@@ -16,12 +16,6 @@ A modern, cross-platform chat application built with Flutter. ChatKaro enables r
 
 ---
 
-## 📸 Screenshots
-
-![ChatKaro Screenshot](image.png)
-
----
-
 ## 🛠️ Getting Started
 
 ### Prerequisites
@@ -98,4 +92,3 @@ Contributions are welcome! Please open issues and submit pull requests for new f
 
 ## 📄 License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
