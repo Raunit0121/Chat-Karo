@@ -225,4 +225,4 @@ If you encounter any issues or have questions:
 
 ---
 
-**Made with ❤️ using Flutter and Firebase**
+**Made with ❤️ Raunit Goyal ❤️ using Flutter and Firebase**
