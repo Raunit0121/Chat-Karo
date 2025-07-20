@@ -148,12 +148,6 @@ No additional environment variables are required. All configuration is handled t
 
 
 
-
-
-
-
-
-
 ## 🛠️ Dependencies
 
 ### Core Dependencies
@@ -214,7 +208,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you encounter any issues or have questions:
 - Create an issue in the GitHub repository
-- Contact the development team
 - Check the Firebase documentation for backend issues
 
 ## 🔮 Roadmap
