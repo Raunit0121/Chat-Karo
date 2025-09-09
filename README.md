@@ -2,16 +2,17 @@
 
 A modern, real-time chat application built with Flutter and Firebase, inspired by WhatsApp's design and functionality.
 
-<p>
-  <img src="https://github.com/user-attachments/assets/c30f7c76-c4b9-4edb-94cf-e545f0d51610" width="200"/>
-  <img src="https://github.com/user-attachments/assets/2b968da1-01ef-4a50-b21b-b699df82e4c4" width="200"/>
-  <img src="https://github.com/user-attachments/assets/3680ecd4-a06b-4397-918c-6a14062b6029" width="200"/>
-  <img src="https://github.com/user-attachments/assets/bf1bf503-6d53-403e-9104-26866f15abd8" width="200"/>
-  <img src="https://github.com/user-attachments/assets/d4aa3eb9-1c61-4d89-8c36-cdf622875ad1" width="200"/>
-  <img src="https://github.com/user-attachments/assets/eddf6c91-24a4-487c-bcd7-a662830d29c2" width="200"/>
-  <img src="https://github.com/user-attachments/assets/1ceedcb7-1a9d-41e4-aeea-2ed6264dc4c2" width="200"/>
-  <img src="https://github.com/user-attachments/assets/2217a108-477f-4977-b8a6-2e88b32967fc" width="200"/>
-</p>
+![WhatsApp Image 2025-09-09 at 20 21 24_881122ce](https://github.com/user-attachments/assets/8542c693-47f5-4950-b77e-22445344f378)
+![WhatsApp Image 2025-09-09 at 20 21 26_3355821b](https://github.com/user-attachments/assets/db8dc5fe-3127-4488-8ce3-5bdf2d888790)
+![WhatsApp Image 2025-09-09 at 20 21 25_590f5723](https://github.com/user-attachments/assets/155ce878-4cfd-4eb6-bbd2-eabbae0aef5d)
+![WhatsApp Image 2025-09-09 at 20 21 24_4cfe3854](https://github.com/user-attachments/assets/20e928d2-4d1c-4577-825b-14145e4fa173)
+![WhatsApp Image 2025-09-09 at 20 21 28_ae50996d](https://github.com/user-attachments/assets/9c42f772-c71b-4de6-9e0d-b7d5b683bca5)
+![WhatsApp Image 2025-09-09 at 20 21 27_b4dcd904](https://github.com/user-attachments/assets/3bc431c5-3de3-4bbd-8eae-21019ed4ff03)
+![WhatsApp Image 2025-09-09 at 20 21 27_863167e0](https://github.com/user-attachments/assets/9f23a7a7-e510-4c10-8895-ec656e7d32a5)
+
+
+
+
 
 
 ## 📱 Features
