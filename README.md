@@ -3,8 +3,7 @@
 A modern, real-time chat application built with Flutter and Firebase, inspired by WhatsApp's design and functionality.
 
 <p align="center">
-  <a href="https://github.com/Raunit0121/Chat-Karo/releases/download/v0.0.1/chatkaro.apk"download>
-  </a>
+  <a href="https://github.com/Raunit0121/Chat-Karo/releases/download/v0.0.1/chatkaro.apk"download ></a>
 </p>
 
 ## 📱 Features
