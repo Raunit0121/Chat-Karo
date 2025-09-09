@@ -5,7 +5,9 @@ A modern, real-time chat application built with Flutter and Firebase, inspired b
 
 
 
-https://chat-karo-landing.vercel.app/
+## 🌐 Live Demo
+Check out the live site here: [Chat Karo Landing Page](https://chat-karo-landing.vercel.app/)
+
 
 ## 📱 Features
 
