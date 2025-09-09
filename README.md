@@ -2,9 +2,11 @@
 
 A modern, real-time chat application built with Flutter and Firebase, inspired by WhatsApp's design and functionality.
 
-
-
-
+<p align="center">
+  <a href="https://github.com/Raunit0121/Chat-Karo/releases/download/v0.0.1/chatkaro.apk" download>
+    <img src="https://img.shields.io/badge/⬇_Download_GateEase_APK-blue?style=for-the-badge&logo=android" alt="Download GateEase APK">
+  </a>
+</p>
 ## 🌐 Live Demo
 Check out the live site here: [Chat Karo Landing Page](https://chat-karo-landing.vercel.app/)
 
