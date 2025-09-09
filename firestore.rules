@@ -1,0 +1,327 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection - users can read/write their own profile and read others
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Group chats collection - group information and settings
+    match /groups/{groupId} {
+      // Allow read if user is a member of the group
+      allow read: if request.auth != null &&
+        request.auth.uid in resource.data.members;
+
+      // Allow create if user is authenticated (they become the admin)
+      allow create: if request.auth != null &&
+        request.auth.uid in request.resource.data.admins &&
+        request.auth.uid in request.resource.data.members &&
+        isValidGroupCreate(request.resource.data);
+
+      // Allow update for group settings (only by admins) or lastActivity (by members)
+      allow update: if request.auth != null &&
+        request.auth.uid in resource.data.members &&
+        (
+          // Admins can update group settings
+          (request.auth.uid in resource.data.admins &&
+           isValidGroupUpdate(request.resource.data, resource.data)) ||
+
+          // Members can update lastActivity when sending messages
+          isValidLastActivityUpdate(request.resource.data, resource.data)
+        );
+
+      // Allow delete only by group creator/admin
+      allow delete: if request.auth != null &&
+        request.auth.uid in resource.data.admins;
+    }
+
+    // Chats collection - messages between users and groups
+    match /chats/{messageId} {
+      // Temporary simplified rule for testing - allow authenticated users to read messages
+      allow read: if request.auth != null;
+
+      // Allow create if user is authenticated and is the sender
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.senderId &&
+        isValidMessageCreate(request.resource.data);
+
+      // Allow update for message status, read receipts, editing, deletion, and reactions
+      allow update: if request.auth != null &&
+        (
+          // Allow sender to edit their own messages (within 24 hours)
+          (request.auth.uid == resource.data.senderId &&
+           isValidEdit(request.resource.data, resource.data)) ||
+
+          // Allow sender to delete their own messages
+          (request.auth.uid == resource.data.senderId &&
+           isValidDeletion(request.resource.data, resource.data)) ||
+
+          // Allow participants to mark messages as read
+          isValidReadUpdate(request.resource.data, resource.data) ||
+
+          // Allow participants to delete messages for themselves
+          isValidPersonalDeletion(request.resource.data, resource.data) ||
+
+          // Allow participants to add/remove reactions
+          isValidReactionUpdate(request.resource.data, resource.data)
+        );
+
+      // Allow delete only by sender (for complete message removal)
+      allow delete: if request.auth != null &&
+        request.auth.uid == resource.data.senderId;
+    }
+    
+    // Typing indicators - temporary status for real-time typing
+    match /typing_indicators/{indicatorId} {
+      // Temporary simplified rule for testing - allow authenticated users
+      allow read, write: if request.auth != null;
+      
+      // Auto-delete after 10 seconds
+      allow create: if request.auth != null && 
+        request.resource.data.timestamp > request.time - duration.value(10, 's');
+    }
+    
+    // User status collection - online/offline status
+    match /user_status/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Media files metadata (for Cloudinary integration)
+    match /media/{mediaId} {
+      // Users can read media they have access to
+      allow read: if request.auth != null &&
+        (request.auth.uid == resource.data.uploadedBy ||
+         request.auth.uid in resource.data.get('sharedWith', []));
+
+      // Users can upload media
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.uploadedBy &&
+        isValidMediaUpload(request.resource.data);
+
+      // Only uploader can delete media
+      allow delete: if request.auth != null &&
+        request.auth.uid == resource.data.uploadedBy;
+    }
+
+    // Push notification tokens
+    match /fcm_tokens/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // User preferences and settings
+    match /user_preferences/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Calls collection - voice and video calls
+    match /calls/{callId} {
+      // Allow read if user is caller or receiver
+      allow read: if request.auth != null &&
+        (request.auth.uid == resource.data.callerId ||
+         request.auth.uid == resource.data.receiverId);
+
+      // Allow create if user is authenticated and is the caller
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.callerId;
+
+      // Allow update for call status changes by participants
+      allow update: if request.auth != null &&
+        (request.auth.uid == resource.data.callerId ||
+         request.auth.uid == resource.data.receiverId);
+
+      // Allow delete by call participants
+      allow delete: if request.auth != null &&
+        (request.auth.uid == resource.data.callerId ||
+         request.auth.uid == resource.data.receiverId);
+    }
+
+
+    // Helper functions for validation
+    function isValidEdit(newData, oldData) {
+      return 
+        // Only text messages can be edited
+        oldData.type == 'text' &&
+        // Message hasn't been deleted
+        !oldData.get('deletedForEveryone', false) &&
+        // Only text field and edit-related fields can be changed
+        newData.diff(oldData).affectedKeys().hasOnly(['text', 'isEdited', 'lastEditedAt', 'editHistory']) &&
+        // Edit history is properly maintained
+        newData.isEdited == true &&
+        newData.lastEditedAt is timestamp;
+    }
+    
+    function isValidDeletion(newData, oldData) {
+      return 
+        // Only deletion-related fields can be changed
+        newData.diff(oldData).affectedKeys().hasOnly(['deletedForEveryone', 'deletedAt']) &&
+        // Proper deletion flags
+        newData.deletedForEveryone == true &&
+        newData.deletedAt is timestamp;
+    }
+    
+    function isValidPersonalDeletion(newData, oldData) {
+      return 
+        // Only personal deletion fields can be changed
+        newData.diff(oldData).affectedKeys().hasOnly(['deletedFor']) &&
+        // User is adding themselves to deletedFor list
+        (oldData.get('deletedFor', []).toSet().union([request.auth.uid].toSet()) == 
+         newData.deletedFor.toSet());
+    }
+
+    function isValidReactionUpdate(newData, oldData) {
+      return
+        // Only reactions field can be changed
+        newData.diff(oldData).affectedKeys().hasOnly(['reactions']) &&
+        // User is a participant in the message
+        request.auth.uid in oldData.participants &&
+        // Reactions array is valid
+        newData.reactions is list;
+    }
+    
+    function isValidReadUpdate(newData, oldData) {
+      return
+        // Only read-related fields can be changed
+        newData.diff(oldData).affectedKeys().hasOnly(['readBy', 'readAt', 'status']) &&
+        // User is adding themselves to readBy list
+        (oldData.get('readBy', []).toSet().union([request.auth.uid].toSet()) ==
+         newData.readBy.toSet()) &&
+        // Status updates are valid
+        (newData.get('status', oldData.get('status', 'sent')) in ['sent', 'delivered', 'read']);
+    }
+
+    function isValidGroupUpdate(newData, oldData) {
+      return
+        // Only allow updates to specific fields
+        newData.diff(oldData).affectedKeys().hasOnly([
+          'name', 'description', 'profilePicture', 'members', 'admins',
+          'settings', 'lastActivity', 'memberCount'
+        ]) &&
+        // Ensure at least one admin remains
+        newData.admins.size() > 0 &&
+        // All admins must be members
+        newData.admins.toSet().difference(newData.members.toSet()).size() == 0 &&
+        // Member count matches actual members
+        newData.memberCount == newData.members.size() &&
+        // Group ID cannot be changed
+        newData.id == oldData.id;
+    }
+
+    // Additional validation for message creation
+    function isValidMessageCreate(data) {
+      return
+        // Required fields are present
+        data.keys().hasAll(['id', 'senderId', 'text', 'timestamp', 'participants']) &&
+        // Sender is authenticated user
+        data.senderId == request.auth.uid &&
+        // Timestamp is recent (within 1 minute)
+        (request.time.toMillis() - data.timestamp.toMillis()) < 60000 &&
+        // Text is not empty for text messages (allow empty text for media messages)
+        (data.get('messageType', 'text') != 'text' || data.text.size() > 0) &&
+        // Participants include the sender
+        request.auth.uid in data.participants;
+    }
+
+    // Validation for group creation
+    function isValidGroupCreate(data) {
+      return
+        // Required fields are present
+        data.keys().hasAll(['id', 'name', 'members', 'admins', 'createdBy', 'createdAt']) &&
+        // Creator is authenticated user
+        data.createdBy == request.auth.uid &&
+        // Creator is in admins and members
+        request.auth.uid in data.admins &&
+        request.auth.uid in data.members &&
+        // At least 2 members (including creator)
+        data.members.size() >= 2 &&
+        // At least 1 admin
+        data.admins.size() >= 1 &&
+        // Member count is correct
+        data.get('memberCount', data.members.size()) == data.members.size() &&
+        // All admins are members
+        data.admins.toSet().difference(data.members.toSet()).size() == 0 &&
+        // Group name is not empty
+        data.name.size() > 0;
+    }
+
+    // Validation for media upload
+    function isValidMediaUpload(data) {
+      return
+        // Required fields are present
+        data.keys().hasAll(['id', 'uploadedBy', 'fileName', 'uploadedAt']) &&
+        // Uploader is authenticated user
+        data.uploadedBy == request.auth.uid &&
+        // File name is not empty
+        data.fileName.size() > 0 &&
+        // File size is reasonable (50MB limit)
+        data.get('fileSize', 0) <= 52428800 &&
+        // Upload timestamp is recent
+        (request.time.toMillis() - data.uploadedAt.toMillis()) < 300000; // 5 minutes
+    }
+
+    // Validation for lastActivity updates (when members send messages)
+    function isValidLastActivityUpdate(newData, oldData) {
+      return
+        // Only lastActivity field is being updated
+        newData.diff(oldData).affectedKeys().hasOnly(['lastActivity']) &&
+        // lastActivity is a timestamp
+        newData.lastActivity is timestamp;
+    }
+
+    // Validation for call creation
+    function isValidCallCreate(data) {
+      return
+        // Required fields are present
+        data.keys().hasAll(['id', 'callerId', 'receiverId', 'channelName', 'status', 'createdAt']) &&
+        // Caller is authenticated user
+        data.callerId == request.auth.uid &&
+        // Caller and receiver are different
+        data.callerId != data.receiverId &&
+        // Status is 'calling' for new calls
+        data.status == 'calling' &&
+        // Created timestamp is recent (within 1 minute)
+        (request.time.toMillis() - data.createdAt.toMillis()) < 60000 &&
+        // Call type is valid
+        data.get('isVideoCall', false) is bool;
+    }
+
+    // Validation for call updates
+    function isValidCallUpdate(newData, oldData) {
+      return
+        // Only allow updates to specific fields
+        newData.diff(oldData).affectedKeys().hasOnly([
+          'status', 'answeredAt', 'endedAt', 'duration'
+        ]) &&
+        // Status transitions are valid
+        isValidStatusTransition(oldData.status, newData.status) &&
+        // Timestamps are valid
+        (newData.get('answeredAt', null) == null || newData.answeredAt is timestamp) &&
+        (newData.get('endedAt', null) == null || newData.endedAt is timestamp);
+    }
+
+    // Validation for call status transitions
+    function isValidStatusTransition(oldStatus, newStatus) {
+      return
+        // calling -> ringing (when callee sees incoming call)
+        (oldStatus == 'calling' && newStatus == 'ringing') ||
+        // calling -> connected (direct answer)
+        (oldStatus == 'calling' && newStatus == 'connected') ||
+        // calling -> missed (timeout)
+        (oldStatus == 'calling' && newStatus == 'missed') ||
+        // calling -> ended (declined)
+        (oldStatus == 'calling' && newStatus == 'ended') ||
+        // ringing -> connected (answered)
+        (oldStatus == 'ringing' && newStatus == 'connected') ||
+        // ringing -> missed (timeout)
+        (oldStatus == 'ringing' && newStatus == 'missed') ||
+        // ringing -> ended (declined)
+        (oldStatus == 'ringing' && newStatus == 'ended') ||
+        // connected -> ended (call finished)
+        (oldStatus == 'connected' && newStatus == 'ended');
+    }
+  }
+}

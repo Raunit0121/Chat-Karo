@@ -1,0 +1,6 @@
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/lottie/start.json # Note: This should be a static image, but using the Lottie file as a placeholder for now. Replace with a PNG if available.
+  android: true
+  ios: true
+  web: true 
