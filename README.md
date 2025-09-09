@@ -2,9 +2,17 @@
 
 A modern, real-time chat application built with Flutter and Firebase, inspired by WhatsApp's design and functionality.
 
-![ChatKaro](https://img.shields.io/badge/Flutter-3.7.2+-blue.svg)
-![Firebase](https://img.shields.io/badge/Firebase-Latest-orange.svg)
-![Platform](https://img.shields.io/badge/Platform-Cross--Platform-green.svg)
+<p>
+  <img src="https://github.com/user-attachments/assets/c30f7c76-c4b9-4edb-94cf-e545f0d51610" width="200"/>
+  <img src="https://github.com/user-attachments/assets/2b968da1-01ef-4a50-b21b-b699df82e4c4" width="200"/>
+  <img src="https://github.com/user-attachments/assets/3680ecd4-a06b-4397-918c-6a14062b6029" width="200"/>
+  <img src="https://github.com/user-attachments/assets/bf1bf503-6d53-403e-9104-26866f15abd8" width="200"/>
+  <img src="https://github.com/user-attachments/assets/d4aa3eb9-1c61-4d89-8c36-cdf622875ad1" width="200"/>
+  <img src="https://github.com/user-attachments/assets/eddf6c91-24a4-487c-bcd7-a662830d29c2" width="200"/>
+  <img src="https://github.com/user-attachments/assets/1ceedcb7-1a9d-41e4-aeea-2ed6264dc4c2" width="200"/>
+  <img src="https://github.com/user-attachments/assets/2217a108-477f-4977-b8a6-2e88b32967fc" width="200"/>
+</p>
+
 
 ## 📱 Features
 
